@@ -78,9 +78,6 @@ html.idle *,html.idle body::before{animation-play-state:paused!important}
 .stat.ok{border-color:var(--sage);color:var(--sage)}
 .kv{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:14px 20px;margin-top:22px}
 .kv dt{font:.72rem var(--mono);color:var(--mut)}.kv dd{font:1.05rem var(--serif)}
-.mark{margin-top:clamp(36px,6vw,64px);position:relative;max-height:340px;overflow:hidden;border:1px solid var(--line)}
-.mark img{width:100%;height:340px;object-fit:cover;filter:grayscale(1) contrast(1.05) brightness(.7)}
-.mark figcaption{position:absolute;left:14px;bottom:10px}
 /* diagrams */
 .fig{border:1px solid var(--line);margin-top:26px}
 .fig>.cap{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;padding:10px 16px;border-bottom:1px solid var(--line)}
@@ -128,8 +125,6 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:28px 64px;justify-content:space-bet
 .ob-chev{animation:chev 1.3s 1.3s cubic-bezier(.2,.8,.2,1) both;transition:transform .5s cubic-bezier(.2,.8,.2,1)}
 .brand:hover .ob-chev,.hero h1:hover .ob-chev{transform:translateY(-6px)}
 @keyframes chev{from{transform:translateY(-18px);opacity:0}to{transform:none;opacity:1}}
-.mark{max-height:none;height:clamp(340px,54vw,540px);cursor:grab;touch-action:pan-y;background:radial-gradient(ellipse at 50% 55%,rgba(137,153,139,.10),transparent 65%)}
-.mark canvas{width:100%;height:100%;display:block}.mark:active{cursor:grabbing}
 @media(prefers-reduced-motion:reduce){.ob-ring{stroke-dashoffset:0}}
 
 .wm{display:flex;align-items:center;gap:.55em}.ang{height:1.15em;width:auto;flex:none;overflow:visible;animation:bob 3.4s ease-in-out infinite}
@@ -185,8 +180,7 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:28px 64px;justify-content:space-bet
   <article class="rv"><h3>Nythos Plus</h3><p class="role">Related project</p><p>The supplied material does not describe Nythos Plus’s features, release date or a downloadable build, so none are claimed. There is no download for it on this page.</p><span class="stat">Status not published</span></article>
  </div>
  <dl class="kv rv"><div><dt>Layer</dt><dd>Integration</dd></div><div><dt>Targets</dt><dd>LM Studio, Bionic</dd></div><div><dt>Release</dt><dd>Developer, 1.0.0</dd></div><div><dt>Models</dt><dd>Yours, not bundled</dd></div><div><dt>Networking</dt><dd>Designed, not in 1.0.0</dd></div></dl>
- <figure class="mark rv"><canvas id="mdl" role="img" aria-label="Conceptual 3D models: a sphere divided into polygonal cells, and a skeletonized leaf with fine veins. Drag to rotate."></canvas><figcaption class="mono mu">Cellular sphere and leaf skeleton · conceptual 3D models · drag to rotate</figcaption></figure>
-</div></section>
+ </div></section>
 
 <section id="architecture" aria-labelledby="a-h" style="position:relative">
  <svg class="stem" id="stem" viewBox="0 0 2 100" preserveAspectRatio="none" aria-hidden="true"><path d="M1 0V100" pathLength="1"/></svg>
@@ -338,44 +332,7 @@ run(()=>{const tl=$("#tl");Object.keys(TOOLS).forEach((k,i)=>{const b=document.c
 <script>
 (()=>{const $=q=>document.querySelector(q),RM=matchMedia("(prefers-reduced-motion:reduce)").matches;
 let sd=7;const r=()=>((sd=Math.imul(sd^sd>>>15,sd|1),sd^=sd+Math.imul(sd^sd>>>7,sd|61),((sd^sd>>>14)>>>0)/4294967296));
-const dot=(a,b)=>a[0]*b[0]+a[1]*b[1]+a[2]*b[2],sub=(a,b)=>[a[0]-b[0],a[1]-b[1],a[2]-b[2]],crs=(a,b)=>[a[1]*b[2]-a[2]*b[1],a[2]*b[0]-a[0]*b[2],a[0]*b[1]-a[1]*b[0]],nrm=a=>{const l=Math.hypot(a[0],a[1],a[2])||1;return[a[0]/l,a[1]/l,a[2]/l]};
-/* sphere divided into Voronoi cells */
-const N=120,S=[];for(let i=0;i<N;i++){const y=1-2*(i+.5)/N+(r()-.5)*.03,q=Math.sqrt(Math.max(0,1-y*y)),a=i*2.39996+(r()-.5)*.25;S.push(nrm([q*Math.cos(a),y,q*Math.sin(a)]))}
-const NB=S.map((p,i)=>S.map((q,j)=>[j,dot(p,q)]).filter(t=>t[0]!==i).sort((a,b)=>b[1]-a[1]).slice(0,8).map(t=>t[0]));
-const VT=[],seen=new Set(),pm=new Map();
-S.forEach((p,i)=>NB[i].forEach(j=>NB[i].forEach(k=>{if(!(j<k))return;const t=[i,j,k].sort((a,b)=>a-b),key=t.join();if(seen.has(key))return;seen.add(key);
- let n=nrm(crs(sub(S[j],p),sub(S[k],p)));const c=[p[0]+S[j][0]+S[k][0],p[1]+S[j][1]+S[k][1],p[2]+S[j][2]+S[k][2]];if(dot(n,c)<0)n=[-n[0],-n[1],-n[2]];
- const d0=dot(n,p);for(let m=0;m<N;m++)if(m!==i&&m!==j&&m!==k&&dot(n,S[m])>d0+1e-9)return;
- const vi=VT.push(n)-1;[[t[0],t[1]],[t[0],t[2]],[t[1],t[2]]].forEach(pr=>{const kk=pr.join();if(!pm.has(kk))pm.set(kk,[]);pm.get(kk).push(vi)})})));
-const EV=[];pm.forEach(v=>{if(v.length===2)EV.push(v)});EV.sort((a,b)=>VT[a[0]][1]+VT[a[1]][1]-VT[b[0]][1]-VT[b[1]][1]);
-const ST=[];for(let i=0;i<650;i++){const u=r()*6.283,v=r()*2-1,w=Math.sqrt(1-v*v);ST.push([w*Math.cos(u),v,w*Math.sin(u)])}
-/* skeleton leaf */
-const LP=[],LE=[];const hw=u=>.4*Math.sqrt(Math.max(0,1-u*u))*(.78+.22*(u+1)/2),mr=u=>.05*Math.sin(u*2.2);
-const pt=(u,v)=>LP.push([u,v,.55*v*v])-1,poly=(pts,g)=>{let pv=-1;pts.forEach(p=>{const i=pt(p[0],p[1]);if(pv>=0)LE.push([pv,i,g]);pv=i})};
-const rg=(a,b,st)=>{const o=[];for(let u=a;u<=b+1e-9;u+=st)o.push(u);return o};
-poly(rg(-1.25,1.05,.1).map(u=>[u,mr(u)]),0);poly(rg(-1,1,.05).map(u=>[u,mr(u)+hw(u)]),1);poly(rg(-1,1,.05).map(u=>[u,mr(u)-hw(u)]),1);
-rg(-.75,.85,.11).forEach(u0=>[-1,1].forEach(sg=>{const u1=Math.min(u0+.28,.97),e=mr(u1)+sg*hw(u1)*.96,cu=u0+.16,cv=mr(u0)+sg*hw(cu)*.45;poly(rg(0,1,.125).map(t=>[(1-t)*(1-t)*u0+2*t*(1-t)*cu+t*t*u1,(1-t)*(1-t)*mr(u0)+2*t*(1-t)*cv+t*t*e]),2)}));
-const m0=LP.length;for(let i=0;i<280;i++){const u=-.95+r()*1.95,v=(r()*2-1)*hw(u)*.9;pt(u,mr(u)+v)}
-for(let i=m0;i<LP.length;i++){LP.map((q,j)=>[j,(q[0]-LP[i][0])**2+(q[1]-LP[i][1])**2]).filter(t=>t[0]>=m0&&t[0]!==i&&t[1]<.011).sort((a,b)=>a[1]-b[1]).slice(0,3).forEach(t=>LE.push([i,t[0],3]))}
-/* 3D canvas */
-const c=$("#mdl"),x=c.getContext("2d");let W,H,U,ang=0,dr=0,drag=false,lx=0,on=false,raf,gr=RM?1:0;
-const proj=(p,t,tilt,R,ox,oy,roll)=>{const cy=Math.cos(t),sy=Math.sin(t),cx=Math.cos(tilt),sx=Math.sin(tilt);let X=p[0]*cy+p[2]*sy;const Z0=-p[0]*sy+p[2]*cy;let Y=p[1]*cx-Z0*sx;const Z=p[1]*sx+Z0*cx;if(roll){const cr=Math.cos(roll),sr=Math.sin(roll),X2=X*cr-Y*sr;Y=X*sr+Y*cr;X=X2}const f=3.6/(3.6-Z*.7);return[ox+X*R*f,oy+Y*R*f,Z]};
-const draw=tm=>{x.clearRect(0,0,W,H);const wide=W>700,pulse=(tm*.00028)%1,sg="201,216,204",off="241,240,235";
- const R=U*1.15,ox=W*(wide?.29:.5),oy=H*(wide?.5:.28),t=ang+dr;
- ST.forEach(p=>{const q=proj(p,t,.35,R,ox,oy);x.fillStyle="rgba("+off+","+(q[2]>0?.34:.07)+")";x.fillRect(q[0],q[1],1.2,1.2)});
- const n=EV.length,rev=gr*1.15*n;x.lineCap="round";
- EV.forEach((e,i)=>{if(i>rev)return;const a=proj(VT[e[0]],t,.35,R,ox,oy),b=proj(VT[e[1]],t,.35,R,ox,oy),fr=(a[2]+b[2])>0,fd=Math.min(1,(rev-i)/14),bo=Math.max(0,1-((i/n-pulse+1)%1)*12);
-  x.strokeStyle=bo>0?"rgba("+sg+","+Math.min(1,.5+bo)*fd+")":"rgba("+off+","+(fr?.78:.16)*fd+")";x.lineWidth=bo>0?2.2:fr?1.3:.55;x.beginPath();x.moveTo(a[0],a[1]);x.lineTo(b[0],b[1]);x.stroke()});
- VT.forEach((v,i)=>{if(i/VT.length>gr)return;const q=proj(v,t,.35,R,ox,oy);if(q[2]<0)return;x.fillStyle="rgba("+off+",.85)";x.beginPath();x.arc(q[0],q[1],1.7,0,6.283);x.fill()});
- /* leaf */
- const R2=U*1.05,ox2=W*(wide?.72:.5),oy2=H*(wide?.5:.74),t2=Math.sin(ang*.7)*.95+dr*.4,ln=LE.length,rev2=gr*1.1*ln;
- LE.forEach((e,i)=>{if(i>rev2)return;const a=proj(LP[e[0]],t2,.15,R2,ox2,oy2,-.28),b=proj(LP[e[1]],t2,.15,R2,ox2,oy2,-.28),g=e[2],fd=Math.min(1,(rev2-i)/20),bo=g<3?Math.max(0,1-((i/ln*3-pulse*3+3)%3)*6):0,fr=(a[2]+b[2])>-.02;
-  x.strokeStyle=bo>0?"rgba("+sg+","+Math.min(1,.5+bo)*fd+")":"rgba("+off+","+[.95,.7,.55,.2][g]*(fr?1:.55)*fd+")";x.lineWidth=[1.8,1.1,.9,.55][g]+(bo>0?1:0);x.beginPath();x.moveTo(a[0],a[1]);x.lineTo(b[0],b[1]);x.stroke()})};
-const size=()=>{const d=Math.min(devicePixelRatio||1,2);W=c.clientWidth;H=c.clientHeight;c.width=W*d;c.height=H*d;x.setTransform(d,0,0,d,0,0);U=W>700?Math.min(H*.3,W*.17):Math.min(W*.27,H*.2);draw(performance.now())};
-const loop=tm=>{if(!on)return;if(!drag)ang+=.003;if(gr<1)gr=Math.min(1,gr+.0055);draw(tm);raf=requestAnimationFrame(loop)};
-new ResizeObserver(size).observe(c);size();
-new IntersectionObserver(e=>{on=e[0].isIntersecting&&!RM&&!document.hidden;cancelAnimationFrame(raf);if(on)raf=requestAnimationFrame(loop)}).observe(c);
-c.addEventListener("pointerdown",e=>{drag=true;lx=e.clientX;c.setPointerCapture(e.pointerId)});c.addEventListener("pointermove",e=>{if(!drag)return;dr+=(e.clientX-lx)*.01;lx=e.clientX;if(RM)draw(0)});c.addEventListener("pointerup",()=>drag=false);c.addEventListener("pointercancel",()=>drag=false);
+
 /* 2D cellular field */
 const fc=$("#fld"),fx=fc.getContext("2d"),M=150,SX=[],SY=[],PH=[],cl=[];let FW,FH,fon=false,fraf,mx=null,my=null;
 for(let i=0;i<9;i++)cl.push([r(),r()]);
@@ -392,7 +349,7 @@ const floop=tm=>{if(!fon)return;fdraw(tm);fraf=requestAnimationFrame(floop)};
 new ResizeObserver(fsize).observe(fc);fsize();
 new IntersectionObserver(e=>{fon=e[0].isIntersecting&&!RM&&!document.hidden;cancelAnimationFrame(fraf);if(fon)fraf=requestAnimationFrame(floop)}).observe(fc);
 fc.addEventListener("pointermove",e=>{const b=fc.getBoundingClientRect();mx=e.clientX-b.left;my=e.clientY-b.top;if(RM)fdraw(0)});fc.addEventListener("pointerleave",()=>{mx=null;if(RM)fdraw(0)});
-document.addEventListener("visibilitychange",()=>{if(document.hidden){on=false;fon=false}});
+document.addEventListener("visibilitychange",()=>{if(document.hidden){fon=false}});
 })();
 </script>
 </body>
